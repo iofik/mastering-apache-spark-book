@@ -110,7 +110,7 @@ Refer to link:spark-logging.adoc[Logging].
 applicationId(): String
 ----
 
-NOTE: `applicationId` is a part of link:spark-TaskScheduler.adoc#contract[TaskScheduler contract] to find the Spark application's id.
+NOTE: `applicationId` is part of link:spark-TaskScheduler.adoc#contract[TaskScheduler contract] to find the Spark application's id.
 
 `applicationId` simply request <<backend, SchedulerBackend>> for the link:spark-SchedulerBackend.adoc#applicationId[Spark application's id].
 
@@ -168,7 +168,7 @@ executorHeartbeatReceived(
 
 CAUTION: FIXME
 
-NOTE: `executorHeartbeatReceived` is a part of the link:spark-TaskScheduler.adoc#contract[TaskScheduler Contract].
+NOTE: `executorHeartbeatReceived` is part of the link:spark-TaskScheduler.adoc#contract[TaskScheduler Contract].
 
 === [[cancelTasks]] Cancelling Tasks for Stage -- `cancelTasks` Method
 
@@ -177,7 +177,7 @@ NOTE: `executorHeartbeatReceived` is a part of the link:spark-TaskScheduler.adoc
 cancelTasks(stageId: Int, interruptThread: Boolean): Unit
 ----
 
-NOTE: `cancelTasks` is a part of link:spark-TaskScheduler.adoc#contract[TaskScheduler contract].
+NOTE: `cancelTasks` is part of link:spark-TaskScheduler.adoc#contract[TaskScheduler contract].
 
 `cancelTasks` cancels all tasks submitted for execution in a stage `stageId`.
 
@@ -195,7 +195,7 @@ handleSuccessfulTask(
 
 `handleSuccessfulTask` simply link:spark-TaskSetManager.adoc#handleSuccessfulTask[forwards the call to the input `taskSetManager`] (passing `tid` and `taskResult`).
 
-NOTE: `handleSuccessfulTask` is called when link:spark-taskschedulerimpl-TaskResultGetter.adoc#enqueueSuccessfulTask[`TaskSchedulerGetter` has managed to deserialize the task result of a task that finished successfully].
+NOTE: `handleSuccessfulTask` is called when link:spark-TaskResultGetter.adoc#enqueueSuccessfulTask[`TaskSchedulerGetter` has managed to deserialize the task result of a task that finished successfully].
 
 === [[handleTaskGettingResult]] `handleTaskGettingResult` Method
 
@@ -206,7 +206,7 @@ handleTaskGettingResult(taskSetManager: TaskSetManager, tid: Long): Unit
 
 `handleTaskGettingResult` simply link:spark-TaskSetManager.adoc#handleTaskGettingResult[forwards the call to the `taskSetManager`].
 
-NOTE: `handleTaskGettingResult` is used to inform that link:spark-taskschedulerimpl-TaskResultGetter.adoc#enqueueSuccessfulTask[`TaskResultGetter` enqueues a successful task with `IndirectTaskResult` task result (and so is about to fetch a remote block from a `BlockManager`)].
+NOTE: `handleTaskGettingResult` is used to inform that link:spark-TaskResultGetter.adoc#enqueueSuccessfulTask[`TaskResultGetter` enqueues a successful task with `IndirectTaskResult` task result (and so is about to fetch a remote block from a `BlockManager`)].
 
 === [[applicationAttemptId]] `applicationAttemptId` Method
 
@@ -271,7 +271,7 @@ Failure to set `schedulingMode` results in a `SparkException`:
 Unrecognized spark.scheduler.mode: [schedulingModeConf]
 ```
 
-Ultimately, `TaskSchedulerImpl` creates a link:spark-taskschedulerimpl-TaskResultGetter.adoc[TaskResultGetter].
+Ultimately, `TaskSchedulerImpl` creates a link:spark-TaskResultGetter.adoc[TaskResultGetter].
 
 === [[initialize]] Saving SchedulerBackend and Building Schedulable Pools (aka Initializing TaskSchedulerImpl) -- `initialize` Method
 
@@ -320,7 +320,7 @@ image::images/taskschedulerimpl-start-standalone.png[align="center"]
 
 `start` also starts <<task-scheduler-speculation, `task-scheduler-speculation` executor service>>.
 
-=== [[statusUpdate]] Requesting TaskResultGetter to Enqueue Task -- `statusUpdate` Method
+=== [[statusUpdate]] Handling Task Status Update -- `statusUpdate` Method
 
 [source, scala]
 ----
@@ -337,7 +337,7 @@ When `state` is one of the link:spark-taskscheduler-tasks.adoc#states[finished s
 
 `statusUpdate` link:spark-TaskSetManager.adoc#removeRunningTask[requests `TaskSetManager` to unregister `tid` from running tasks].
 
-`statusUpdate` requests <<taskResultGetter, TaskResultGetter>> to link:spark-taskschedulerimpl-TaskResultGetter.adoc#enqueueSuccessfulTask[schedule an asynchrounous task to deserialize the task result (and notify `TaskSchedulerImpl` back)] for `tid` in `FINISHED` state and link:spark-taskschedulerimpl-TaskResultGetter.adoc#enqueueFailedTask[schedule an asynchrounous task to deserialize `TaskFailedReason` (and notify `TaskSchedulerImpl` back)] for `tid` in the other finished states (i.e. `FAILED`, `KILLED`, `LOST`).
+`statusUpdate` requests <<taskResultGetter, TaskResultGetter>> to link:spark-TaskResultGetter.adoc#enqueueSuccessfulTask[schedule an asynchrounous task to deserialize the task result (and notify `TaskSchedulerImpl` back)] for `tid` in `FINISHED` state and link:spark-TaskResultGetter.adoc#enqueueFailedTask[schedule an asynchrounous task to deserialize `TaskFailedReason` (and notify `TaskSchedulerImpl` back)] for `tid` in the other finished states (i.e. `FAILED`, `KILLED`, `LOST`).
 
 If a task is in `LOST` state, `statusUpdate` link:spark-dagscheduler.adoc#executorLost[notifies `DAGScheduler` that the executor was lost] (with `SlaveLost` and the reason `Task [tid] was lost, so marking the executor as lost as well.`) and link:spark-SchedulerBackend.adoc#reviveOffers[requests `SchedulerBackend` to revive offers].
 
@@ -355,7 +355,16 @@ ERROR Exception in statusUpdate
 
 CAUTION: FIXME image with scheduler backends calling `TaskSchedulerImpl.statusUpdate`.
 
-NOTE: `statusUpdate` is used when link:spark-SchedulerBackend.adoc[SchedulerBackends], i.e. link:spark-CoarseGrainedSchedulerBackend-DriverEndpoint.adoc#StatusUpdate[CoarseGrainedSchedulerBackend], `LocalSchedulerBackend` and `MesosFineGrainedSchedulerBackend`, inform about changes in task states.
+[NOTE]
+====
+`statusUpdate` is used when:
+
+1. `DriverEndpoint` (of link:spark-CoarseGrainedSchedulerBackend.adoc[CoarseGrainedSchedulerBackend]) is requested to link:spark-CoarseGrainedSchedulerBackend-DriverEndpoint.adoc#StatusUpdate[handle a StatusUpdate message]
+
+1. `LocalEndpoint` is requested to link:spark-LocalEndpoint.adoc#StatusUpdate[handle a StatusUpdate message]
+
+1. `MesosFineGrainedSchedulerBackend` is requested to handle a task status update
+====
 
 === [[speculationScheduler]][[task-scheduler-speculation]] task-scheduler-speculation Scheduled Executor Service -- `speculationScheduler` Internal Attribute
 
@@ -408,7 +417,7 @@ NOTE: `postStartHook` is used when link:spark-SparkContext.adoc#creating-instanc
 stop(): Unit
 ----
 
-`stop()` stops all the internal services, i.e. <<task-scheduler-speculation, `task-scheduler-speculation` executor service>>, link:spark-SchedulerBackend.adoc[SchedulerBackend], link:spark-taskschedulerimpl-TaskResultGetter.adoc[TaskResultGetter], and <<starvationTimer, starvationTimer>> timer.
+`stop()` stops all the internal services, i.e. <<task-scheduler-speculation, `task-scheduler-speculation` executor service>>, link:spark-SchedulerBackend.adoc[SchedulerBackend], link:spark-TaskResultGetter.adoc[TaskResultGetter], and <<starvationTimer, starvationTimer>> timer.
 
 === [[defaultParallelism]] Finding Default Level of Parallelism -- `defaultParallelism` Method
 
@@ -417,7 +426,7 @@ stop(): Unit
 defaultParallelism(): Int
 ----
 
-NOTE: `defaultParallelism` is a part of link:spark-TaskScheduler.adoc#defaultParallelism[TaskScheduler contract] as a hint for sizing jobs.
+NOTE: `defaultParallelism` is part of link:spark-TaskScheduler.adoc#defaultParallelism[TaskScheduler contract] as a hint for sizing jobs.
 
 `defaultParallelism` simply requests <<backend, SchedulerBackend>> for the link:spark-SchedulerBackend.adoc#defaultParallelism[default level of parallelism].
 
@@ -430,7 +439,7 @@ NOTE: *Default level of parallelism* is a hint for sizing jobs that `SparkContex
 submitTasks(taskSet: TaskSet): Unit
 ----
 
-NOTE: `submitTasks` is a part of link:spark-TaskScheduler.adoc#contract[TaskScheduler Contract].
+NOTE: `submitTasks` is part of link:spark-TaskScheduler.adoc#contract[TaskScheduler Contract].
 
 .TaskSchedulerImpl.submitTasks
 image::images/taskschedulerImpl-submitTasks.png[align="center"]
@@ -506,7 +515,7 @@ handleFailedTask(
 
 `handleFailedTask` link:spark-TaskSetManager.adoc#handleFailedTask[notifies `taskSetManager` that `tid` task has failed] and, only when link:spark-TaskSetManager.adoc#zombie-state[`taskSetManager` is not in zombie state] and `tid` is not in `KILLED` state, link:spark-SchedulerBackend.adoc#reviveOffers[requests `SchedulerBackend` to revive offers].
 
-NOTE: `handleFailedTask` is called when link:spark-taskschedulerimpl-TaskResultGetter.adoc#enqueueSuccessfulTask[`TaskResultGetter` deserializes a `TaskFailedReason`] for a failed task.
+NOTE: `handleFailedTask` is called when link:spark-TaskResultGetter.adoc#enqueueSuccessfulTask[`TaskResultGetter` deserializes a `TaskFailedReason`] for a failed task.
 
 === [[taskSetFinished]] `taskSetFinished` Method
 
@@ -608,7 +617,7 @@ image::images/TaskSchedulerImpl-resourceOffers-rootPool-getSortedTaskSetQueue.pn
 ====
 `rootPool` is configured when <<initialize, `TaskSchedulerImpl` is initialized>>.
 
-`rootPool` is a part of the link:spark-TaskScheduler.adoc#rootPool[TaskScheduler Contract] and exclusively managed by link:spark-taskscheduler-schedulablebuilders.adoc[SchedulableBuilders], i.e. link:spark-taskscheduler-FIFOSchedulableBuilder.adoc[FIFOSchedulableBuilder] and link:spark-taskscheduler-FairSchedulableBuilder.adoc[FairSchedulableBuilder] (that  link:spark-taskscheduler-schedulablebuilders.adoc#addTaskSetManager[manage registering TaskSetManagers with the root pool]).
+`rootPool` is part of the link:spark-TaskScheduler.adoc#rootPool[TaskScheduler Contract] and exclusively managed by link:spark-taskscheduler-schedulablebuilders.adoc[SchedulableBuilders], i.e. link:spark-taskscheduler-FIFOSchedulableBuilder.adoc[FIFOSchedulableBuilder] and link:spark-taskscheduler-FairSchedulableBuilder.adoc[FairSchedulableBuilder] (that  link:spark-taskscheduler-schedulablebuilders.adoc#addTaskSetManager[manage registering TaskSetManagers with the root pool]).
 
 link:spark-TaskSetManager.adoc[TaskSetManager] manages execution of the tasks in a single link:spark-taskscheduler-tasksets.adoc[TaskSet] that represents a single link:spark-DAGScheduler-Stage.adoc[Stage].
 ====

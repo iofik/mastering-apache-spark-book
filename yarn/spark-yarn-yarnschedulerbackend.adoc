@@ -60,7 +60,7 @@ Only defined in link:../spark-deploy-mode.adoc#cluster[`cluster` deploy mode].
 
 Set when link:spark-yarn-cluster-yarnclusterschedulerbackend.adoc#start[YarnClusterSchedulerBackend starts] (and <<bindToYarn, bindToYarn>> is called) using YARN's `ApplicationMaster.getAttemptId`.
 
-Used for <<applicationAttemptId, applicationAttemptId>> which is a part of link:spark-SchedulerBackend.adoc#contract[SchedulerBackend Contract].
+Used for <<applicationAttemptId, applicationAttemptId>> which is part of link:spark-SchedulerBackend.adoc#contract[SchedulerBackend Contract].
 
 | [[shouldResetOnAmRegister]] `shouldResetOnAmRegister`
 |
@@ -72,7 +72,7 @@ Disabled (i.e. `false`) when <<creating-instance, YarnSchedulerBackend is create
 
 === [[reset]] Resetting YarnSchedulerBackend -- `reset` Method
 
-NOTE: `reset` is a part of link:../spark-CoarseGrainedSchedulerBackend.adoc#contract[CoarseGrainedSchedulerBackend Contract].
+NOTE: `reset` is part of link:../spark-CoarseGrainedSchedulerBackend.adoc#contract[CoarseGrainedSchedulerBackend Contract].
 
 `reset` link:../spark-CoarseGrainedSchedulerBackend.adoc#reset[resets] the parent `CoarseGrainedSchedulerBackend` scheduler backend and link:../spark-ExecutorAllocationManager.adoc[ExecutorAllocationManager] (accessible by `SparkContext.executorAllocationManager`).
 
@@ -83,7 +83,7 @@ NOTE: `reset` is a part of link:../spark-CoarseGrainedSchedulerBackend.adoc#cont
 def doRequestTotalExecutors(requestedTotal: Int): Boolean
 ----
 
-NOTE: `doRequestTotalExecutors` is a part of the link:../spark-CoarseGrainedSchedulerBackend.adoc#doRequestTotalExecutors[CoarseGrainedSchedulerBackend Contract].
+NOTE: `doRequestTotalExecutors` is part of the link:../spark-CoarseGrainedSchedulerBackend.adoc#doRequestTotalExecutors[CoarseGrainedSchedulerBackend Contract].
 
 .Requesting Total Executors in YarnSchedulerBackend (doRequestTotalExecutors method)
 image::../images/spark-YarnSchedulerBackend-doRequestTotalExecutors.png[align="center"]
@@ -98,7 +98,7 @@ CAUTION: FIXME The internal attributes are already set. When and how?
 
 NOTE: A `SchedulerExtensionServices` object is created when <<creating-instance, `YarnSchedulerBackend` is initialized>> and available as `services`.
 
-Ultimately, it calls the parent's link:../spark-executor-backends-CoarseGrainedExecutorBackend.adoc#start[CoarseGrainedSchedulerBackend.start].
+Ultimately, it calls the parent's link:../spark-CoarseGrainedExecutorBackend.adoc#start[CoarseGrainedSchedulerBackend.start].
 
 [NOTE]
 ====
@@ -111,11 +111,11 @@ java.lang.IllegalArgumentException: requirement failed: application ID unset
 
 === [[stop]] Stopping the Backend -- `stop` Method
 
-`stop` calls the parent's link:../spark-executor-backends-CoarseGrainedExecutorBackend.adoc#requestTotalExecutors[CoarseGrainedSchedulerBackend.requestTotalExecutors] (using `(0, 0, Map.empty)` parameters).
+`stop` calls the parent's link:../spark-CoarseGrainedExecutorBackend.adoc#requestTotalExecutors[CoarseGrainedSchedulerBackend.requestTotalExecutors] (using `(0, 0, Map.empty)` parameters).
 
 CAUTION: FIXME Explain what `0, 0, Map.empty` means after the method's described for the parent.
 
-It calls the parent's link:../spark-executor-backends-CoarseGrainedExecutorBackend.adoc#stop[CoarseGrainedSchedulerBackend.stop].
+It calls the parent's link:../spark-CoarseGrainedExecutorBackend.adoc#stop[CoarseGrainedSchedulerBackend.stop].
 
 Ultimately, it stops the internal `SchedulerExtensionServiceBinding` object (using `services.stop()`).
 
@@ -139,7 +139,7 @@ NOTE: <<start, start>> requires `appId`.
 applicationAttemptId(): Option[String]
 ----
 
-NOTE: `applicationAttemptId` is a part of link:spark-SchedulerBackend.adoc#contract[SchedulerBackend Contract].
+NOTE: `applicationAttemptId` is part of link:spark-SchedulerBackend.adoc#contract[SchedulerBackend Contract].
 
 `applicationAttemptId` requests the internal YARN's <<attemptId, ApplicationAttemptId>> for the Spark application's link:++https://hadoop.apache.org/docs/current/api/org/apache/hadoop/yarn/api/records/ApplicationAttemptId.html#getAttemptId--++[current attempt id].
 
@@ -149,7 +149,7 @@ NOTE: This section is only to take notes about the required components to instan
 
 `YarnSchedulerBackend` takes the following when created:
 
-. link:../spark-taskschedulerimpl.adoc[TaskSchedulerImpl]
+. link:../spark-TaskSchedulerImpl.adoc[TaskSchedulerImpl]
 . link:../spark-SparkContext.adoc[SparkContext]
 
 `YarnSchedulerBackend` initializes the <<internal-properties, internal properties>>.
@@ -161,6 +161,6 @@ NOTE: This section is only to take notes about the required components to instan
 sufficientResourcesRegistered(): Boolean
 ----
 
-NOTE: `sufficientResourcesRegistered` is a part of the link:../spark-CoarseGrainedSchedulerBackend.adoc#contract[CoarseGrainedSchedulerBackend contract] that makes sure that sufficient resources are available.
+NOTE: `sufficientResourcesRegistered` is part of the link:../spark-CoarseGrainedSchedulerBackend.adoc#contract[CoarseGrainedSchedulerBackend contract] that makes sure that sufficient resources are available.
 
 `sufficientResourcesRegistered` is positive, i.e. `true`, when link:../spark-CoarseGrainedSchedulerBackend.adoc#totalRegisteredExecutors[totalRegisteredExecutors] is exactly or above <<minRegisteredRatio, minRegisteredRatio>> of <<totalExpectedExecutors, totalExpectedExecutors>>.

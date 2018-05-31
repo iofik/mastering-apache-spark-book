@@ -225,9 +225,9 @@
 ... link:spark-taskscheduler-schedulingmode.adoc[Scheduling Mode -- `spark.scheduler.mode` Spark Property]
 ... link:spark-TaskInfo.adoc[TaskInfo]
 
-.. link:spark-taskschedulerimpl.adoc[TaskSchedulerImpl -- Default TaskScheduler]
+.. link:spark-TaskSchedulerImpl.adoc[TaskSchedulerImpl -- Default TaskScheduler]
 ... link:spark-taskschedulerimpl-speculative-execution.adoc[Speculative Execution of Tasks]
-... link:spark-taskschedulerimpl-TaskResultGetter.adoc[TaskResultGetter]
+... link:spark-TaskResultGetter.adoc[TaskResultGetter]
 
 .. link:spark-taskscheduler-taskcontext.adoc[TaskContext]
 ... link:spark-taskscheduler-TaskContextImpl.adoc[TaskContextImpl]
@@ -247,7 +247,7 @@
 ... link:spark-CoarseGrainedSchedulerBackend-DriverEndpoint.adoc[DriverEndpoint -- CoarseGrainedSchedulerBackend RPC Endpoint]
 
 . link:spark-ExecutorBackend.adoc[ExecutorBackend -- Pluggable Executor Backends]
-.. link:spark-executor-backends-CoarseGrainedExecutorBackend.adoc[CoarseGrainedExecutorBackend]
+.. link:spark-CoarseGrainedExecutorBackend.adoc[CoarseGrainedExecutorBackend]
 .. link:spark-executor-backends-MesosExecutorBackend.adoc[MesosExecutorBackend]
 
 . link:spark-blockmanager.adoc[BlockManager -- Key-Value Store for Blocks]
@@ -332,6 +332,7 @@
 .. link:spark-rpc-netty.adoc[Netty-based RpcEnv]
 
 . link:spark-TransportConf.adoc[TransportConf -- Transport Configuration]
+. link:spark-Utils.adoc[Utils Helper Object]
 
 === Spark Core / Security
 
